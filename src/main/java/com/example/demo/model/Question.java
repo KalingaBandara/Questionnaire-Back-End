@@ -24,9 +24,4 @@ public class Question {
     private String generalFeedback;
     private String rightAnswerIndex;
 
-
-
-
-
-
 }

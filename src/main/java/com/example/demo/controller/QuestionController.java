@@ -4,18 +4,21 @@ import com.example.demo.model.QuestionWrapper;
 import com.example.demo.model.Response;
 import com.example.demo.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-//@CrossOrigin(origins = "http://localhost:3008")
 @RestController
 @RequestMapping("question")
 public class QuestionController {
 
     @Autowired
     QuestionService questionService;
+
+    private static final String API_KEY = "NjVkNDIyMjNmMjc3NmU3OTI5MWJmZGI0OjY1ZDQyMjIzZjI3NzZlNzkyOTFiZmRhYQ";
 
     @GetMapping("allQuestions")
     public ResponseEntity<List<Question>> getAllQuestions(){
@@ -33,9 +36,15 @@ public class QuestionController {
     }
 
     @GetMapping("get")
-    public ResponseEntity<List<QuestionWrapper>> getQuestions(){
-        return questionService.getQuestions();
+    public ResponseEntity<List<QuestionWrapper>> getQuestions(@RequestHeader HttpHeaders headers){
+        if (headers.containsKey("API-Key") && headers.getFirst("API-Key").equals(API_KEY)) {
+            return questionService.getQuestions();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
     }
+
 
     @PostMapping("submit")
     public ResponseEntity<Integer> submitQuiz(@RequestBody List<Response> responses){
