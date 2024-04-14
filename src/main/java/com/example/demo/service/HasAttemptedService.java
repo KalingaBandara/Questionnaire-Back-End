@@ -15,8 +15,8 @@ public class HasAttemptedService {
         this.hasAttemptedDao = hasAttemptedDao;
     }
 
-    public HasAttempted findByApiKey(String apiKey) {
-        return hasAttemptedDao.findByApiKey(apiKey);
+    public HasAttempted findByUserName(String username) {
+        return hasAttemptedDao.findByUserName(username);
     }
 
     public HasAttempted saveOrUpdate(HasAttempted hasAttempted) {

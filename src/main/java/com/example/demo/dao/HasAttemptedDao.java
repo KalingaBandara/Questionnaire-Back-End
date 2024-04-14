@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HasAttemptedDao extends JpaRepository<HasAttempted, Long> {
 
-    HasAttempted findByApiKey(String apiKey);
+    HasAttempted findByUserName(String username);
 }
 

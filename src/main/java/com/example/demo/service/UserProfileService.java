@@ -15,15 +15,12 @@ public class UserProfileService {
 
     private static final String API_URL = "http://20.15.114.131:8080/api/user/profile/view";
 
-    public UserProfileService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public UserProfile getUserProfile(String jwtToken) {
         // Configure the RestTemplate with the JWT Request Interceptor
-        String jwtToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvdmVyc2lnaHRfZzE1IiwiaWF0IjoxNzEyOTg4MTAyLCJleHAiOjE3MTMwMjQxMDJ9.WNr4X9ILA_1dni_yCOTXbrWsgciYkvXKuTUWY7puORGst60cS53IKGOyGMN19AACkrjEpAfe6rSd4KaXZvVAjQ";
         JwtRequestInterceptor jwtRequestInterceptor = new JwtRequestInterceptor(jwtToken);
+        restTemplate.getInterceptors().clear(); // Clear existing interceptors
         restTemplate.getInterceptors().add(jwtRequestInterceptor);
-    }
 
-    public UserProfile getUserProfile() {
         try {
             // Make the GET request and parse the JSON response into the UserProfile model
             UserProfile userProfile = restTemplate.getForObject(API_URL, UserProfile.class);

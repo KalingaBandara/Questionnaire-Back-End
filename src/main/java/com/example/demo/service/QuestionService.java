@@ -5,6 +5,7 @@ import com.example.demo.dao.QuestionDao;
 import com.example.demo.model.QuestionWrapper;
 import com.example.demo.model.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,9 @@ public class QuestionService {
     QuestionDao questionDao;
     public ResponseEntity<List<Question>> getAllQuestions() {
         try{
-            return new ResponseEntity<> (questionDao.findAll(), HttpStatus.OK);
+            Sort sort = Sort.by(Sort.Direction.ASC, "questionId"); // Sort by questionId in ascending order
+            // Fetch questions from data source
+            return new ResponseEntity<> (questionDao.findAll(sort), HttpStatus.OK);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -28,34 +31,13 @@ public class QuestionService {
 
     }
 
-    public ResponseEntity<String> addQuestion(Question question) {
-        try {
-            questionDao.save(question);
-            return new ResponseEntity<>("Success", HttpStatus.CREATED);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Failed to add question", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public ResponseEntity<String> deleteQuestionById(Integer id) {
-        try {
-            if (questionDao.existsById(id)) {
-                questionDao.deleteById(id);
-                return new ResponseEntity<>("Question deleted successfully", HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("Question not found", HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Failed to delete question", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     public ResponseEntity<List<QuestionWrapper>> getQuestions() {
         try {
+            Sort sort = Sort.by(Sort.Direction.ASC, "questionId"); // Sort by questionId in ascending order
+
             // Fetch questions from data source
-            List<Question> questionsFromDB = questionDao.findAll();
+            List<Question> questionsFromDB = questionDao.findAll(sort);
 
             // Construct QuestionWrapper objects with required fields
             List<QuestionWrapper> questionsForUser = new ArrayList<>();
@@ -76,6 +58,7 @@ public class QuestionService {
         ResponseEntity<List<Question>> questionsResponse = getAllQuestions();
         List<Question> questions = questionsResponse.getBody();
 
+
         // Check if the response from getAllQuestions is successful
         if (questionsResponse.getStatusCode() != HttpStatus.OK) {
             // If not successful, return the same response
@@ -94,6 +77,8 @@ public class QuestionService {
             Response response = responses.get(i);
             Question question = questions.get(i);
             // Check if the response index matches the right answer index
+            System.out.println("Response: " + response.getResponse() + ", Question's right answer: " + question.getRightAnswerIndex());
+
             if (Integer.parseInt(response.getResponse()) == Integer.parseInt(question.getRightAnswerIndex())) {
                 right++;
             }
