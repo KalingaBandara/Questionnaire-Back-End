@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class QuestionService {
     @Autowired
     QuestionDao questionDao;
-    public ResponseEntity<List<Question>> getAllQuestions() {
+    public ResponseEntity<List<Question>> getQuestionsWithAnswers() {
         try{
             Sort sort = Sort.by(Sort.Direction.ASC, "questionId"); // Sort by questionId in ascending order
             // Fetch questions from data source
@@ -32,7 +32,7 @@ public class QuestionService {
     }
 
 
-    public ResponseEntity<List<QuestionWrapper>> getQuestions() {
+    public ResponseEntity<List<QuestionWrapper>> getQuestionsWithoutAnswers() {
         try {
             Sort sort = Sort.by(Sort.Direction.ASC, "questionId"); // Sort by questionId in ascending order
 
@@ -55,7 +55,7 @@ public class QuestionService {
     }
 
     public ResponseEntity<Integer> calculateScore(List<Response> responses) {
-        ResponseEntity<List<Question>> questionsResponse = getAllQuestions();
+        ResponseEntity<List<Question>> questionsResponse = getQuestionsWithAnswers();
         List<Question> questions = questionsResponse.getBody();
 
 
@@ -76,15 +76,13 @@ public class QuestionService {
         for (int i = 0; i < responses.size(); i++) {
             Response response = responses.get(i);
             Question question = questions.get(i);
-            // Check if the response index matches the right answer index
-            System.out.println("Response: " + response.getResponse() + ", Question's right answer: " + question.getRightAnswerIndex());
 
+            // Check if the response index matches the right answer index
             if (Integer.parseInt(response.getResponse()) == Integer.parseInt(question.getRightAnswerIndex())) {
                 right++;
             }
         }
         return new ResponseEntity<>(right, HttpStatus.OK);
-
     }
 }
 

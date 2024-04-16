@@ -14,6 +14,7 @@ public class QuestionWrapper {
     private String feedback4;
     private String generalFeedback;
 
+    //QuestionWrapper is to fetch the fields in the database to the frontend except the right answer.
     public QuestionWrapper(Integer questionId, String questionTitle, String option1, String option2, String option3, String option4, String feedback1, String feedback2, String feedback3, String feedback4, String generalFeedback) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
@@ -26,7 +27,6 @@ public class QuestionWrapper {
         this.feedback3 = feedback3;
         this.feedback4 = feedback4;
         this.generalFeedback = generalFeedback;
-
 
     }
 }

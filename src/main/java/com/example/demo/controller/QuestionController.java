@@ -27,60 +27,47 @@ public class QuestionController {
 
 
 
-    @GetMapping("getQuestions")
+    @GetMapping("/getQuestions")
     public ResponseEntity<List<QuestionWrapper>> getQuestions(@RequestHeader HttpHeaders headers) {
-        // Retrieve the JWT token from the specified header (e.g., "JWT-Token")
-        String jwtToken = null;
-        if (headers.containsKey("JWT-Token")) {
-            jwtToken = headers.getFirst("JWT-Token");
+        // Use the UserProfileService to validate and retrieve the user profile
+        ResponseEntity<UserProfile> responseEntity = userProfileService.validateAndRetrieveUserProfile(headers);
+
+        // Check if the response is not successful
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            // Return the status code from response entity as the response
+            return ResponseEntity.status(responseEntity.getStatusCode()).build();
         }
 
-        // If JWT token is not present, return a bad request response
-        if (jwtToken == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-
-        // Use the UserProfileService to fetch the user profile based on the JWT token
-        UserProfile userProfile = userProfileService.getUserProfile(jwtToken);
-        if (userProfile == null) {
-            // Return unauthorized response if the user profile is not found
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        // Retrieve the user profile from the response entity
+        UserProfile userProfile = responseEntity.getBody();
 
         // Retrieve the username from the UserProfile
         String username = userProfile.getUser().getUsername();
 
-        // Check if the user has attempted using the username or JWT token
+        // Check if the user has attempted using the username
         HasAttempted user = hasAttemptedService.findByUserName(username);
-
         if (user != null) {
             // Return unauthorized response if the user has attempted
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // If all verifications pass, fetch the questions
-        return questionService.getQuestions();
+        return questionService.getQuestionsWithoutAnswers();
     }
 
-    @PostMapping("calculateScore")
+    @PostMapping("/calculateScore")
     public ResponseEntity<Integer> calculateScore(@RequestHeader HttpHeaders headers, @RequestBody List<Response> responses) {
-        // Retrieve the JWT token from the specified header (e.g., "JWT-Token")
-        String jwtToken = null;
-        if (headers.containsKey("JWT-Token")) {
-            jwtToken = headers.getFirst("JWT-Token");
+        // Use the UserProfileService to validate and retrieve the user profile
+        ResponseEntity<UserProfile> responseEntity = userProfileService.validateAndRetrieveUserProfile(headers);
+
+        // Check if the response is not successful
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            // Return the response code and zero score
+            return ResponseEntity.status(responseEntity.getStatusCode()).body(0);
         }
 
-        // If JWT token is not present, return a bad request response
-        if (jwtToken == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
-        }
-
-        // Use the UserProfileService to fetch the user profile based on the JWT token
-        UserProfile userProfile = userProfileService.getUserProfile(jwtToken);
-        if (userProfile == null) {
-            // Return unauthorized response if the user profile is not found
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(0);
-        }
+        // Retrieve the user profile from the response entity
+        UserProfile userProfile = responseEntity.getBody();
 
         // Retrieve the username from the UserProfile
         String username = userProfile.getUser().getUsername();
@@ -109,25 +96,19 @@ public class QuestionController {
     }
 
 
-    @GetMapping("getScore")
+    @GetMapping("/getScore")
     public ResponseEntity<Integer> getScore(@RequestHeader HttpHeaders headers) {
-        // Retrieve the JWT token from the specified header (e.g., "JWT-Token")
-        String jwtToken = null;
-        if (headers.containsKey("JWT-Token")) {
-            jwtToken = headers.getFirst("JWT-Token");
+        // Use the UserProfileService to validate and retrieve the user profile
+        ResponseEntity<UserProfile> responseEntity = userProfileService.validateAndRetrieveUserProfile(headers);
+
+        // Check if the response is not successful
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            // Return the response code and zero score
+            return ResponseEntity.status(responseEntity.getStatusCode()).body(0);
         }
 
-        // If JWT token is not present, return a bad request response
-        if (jwtToken == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(0);
-        }
-
-        // Use the UserProfileService to fetch the user profile based on the JWT token
-        UserProfile userProfile = userProfileService.getUserProfile(jwtToken);
-        if (userProfile == null) {
-            // Return unauthorized response if the user profile is not found
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(0);
-        }
+        // Retrieve the user profile from the response entity
+        UserProfile userProfile = responseEntity.getBody();
 
         // Retrieve the username from the UserProfile
         String username = userProfile.getUser().getUsername();
@@ -140,8 +121,6 @@ public class QuestionController {
             return ResponseEntity.notFound().build(); // User not found for the given username
         }
     }
-
-
 }
 
 

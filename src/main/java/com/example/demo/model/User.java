@@ -2,7 +2,7 @@ package com.example.demo.model;
 
 import lombok.Getter;
 import lombok.Setter;
-
+//User class is to address the top level user field in JSON output for view profile api
 public class User {
     @Getter
     @Setter

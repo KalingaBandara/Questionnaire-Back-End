@@ -23,64 +23,54 @@ public class HasAttemptedController {
     }
 
 
-
     @GetMapping("/updateAttemptStatus")
     public ResponseEntity<String> updateAttemptStatus(@RequestHeader HttpHeaders headers) {
-        // Retrieve the JWT token from the specified header (e.g., "JWT-Token")
-        String jwtToken = null;
-        if (headers.containsKey("JWT-Token")) {
-            jwtToken = headers.getFirst("JWT-Token");
+
+        // Use the UserProfileService to validate and retrieve the user profile
+        ResponseEntity<UserProfile> responseEntity = userProfileService.validateAndRetrieveUserProfile(headers);
+        // Check if the response is not successful
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            // Return a response with the status code and reason phrase
+            return new ResponseEntity<>(responseEntity.getStatusCode().toString(), responseEntity.getStatusCode());
         }
 
-        // If JWT token is not present, return a bad request response
-        if (jwtToken == null) {
-            return new ResponseEntity<>("JWT token missing in the request headers", HttpStatus.BAD_REQUEST);
-        }
-
-        // Use the UserProfileService to fetch the user profile based on the JWT token
-        UserProfile userProfile = userProfileService.getUserProfile(jwtToken);
-        if (userProfile == null) {
-            // Return unauthorized response if the user profile is not found
-            return new ResponseEntity<>("Invalid JWT token", HttpStatus.UNAUTHORIZED);
-        }
-
-        // Retrieve the username from the UserProfile
+        // Retrieve the user profile and username
+        UserProfile userProfile = responseEntity.getBody();
         String username = userProfile.getUser().getUsername();
+
+        // Extract the JWT token from headers
+        String jwtToken = headers.getFirst("JWT-Token");
+
+        // Create the HasAttempted object
         HasAttempted userAttempt = new HasAttempted(jwtToken, true, -1, username);
 
         try {
             hasAttemptedService.saveOrUpdate(userAttempt);
             return new ResponseEntity<>("Attempt status updated successfully", HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
             return new ResponseEntity<>("Failed to update attempt status", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @GetMapping("/getUserAttemptStatus")
     public ResponseEntity<Boolean> getUserAttemptStatus(@RequestHeader HttpHeaders headers) {
-        // Retrieve the JWT token from the specified header (e.g., "JWT-Token")
-        String jwtToken = null;
-        if (headers.containsKey("JWT-Token")) {
-            jwtToken = headers.getFirst("JWT-Token");
+        // Use the UserProfileService to validate and retrieve the user profile
+        ResponseEntity<UserProfile> responseEntity = userProfileService.validateAndRetrieveUserProfile(headers);
+
+        // Check if the response is not successful
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            // Return a response with the status code and reason phrase
+            return new ResponseEntity<>(false, responseEntity.getStatusCode());
         }
 
-        // If JWT token is not present, return a bad request response
-        if (jwtToken == null) {
-            return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
-        }
-
-        // Use the UserProfileService to fetch the user profile based on the JWT token
-        UserProfile userProfile = userProfileService.getUserProfile(jwtToken);
-        if (userProfile == null) {
-            // Return unauthorized response if the user profile is not found
-            return new ResponseEntity<>(false, HttpStatus.UNAUTHORIZED);
-        }
+        // Retrieve the user profile from the response
+        UserProfile userProfile = responseEntity.getBody();
 
         // Retrieve the username from the UserProfile
         String username = userProfile.getUser().getUsername();
 
         // Find the HasAttempted entity using the username
         HasAttempted userAttempt = hasAttemptedService.findByUserName(username);
+
         if (userAttempt != null) {
             return new ResponseEntity<>(userAttempt.isHasAttempted(), HttpStatus.OK);
         } else {
@@ -88,5 +78,6 @@ public class HasAttemptedController {
             return new ResponseEntity<>(false, HttpStatus.OK);
         }
     }
+
 
 }
